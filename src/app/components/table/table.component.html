@@ -1,1 +1,9 @@
-<p>Table</p>
+@for (row of stateSvc.table(); let rowIndex = $index; track rowIndex){
+<div class="row">
+  @for (cell of row; let cellIndex = $index; track cellIndex){
+  <div class="cell">
+    @if(cell === 'empty'){ }@else if(cell === 'snake'){ 🐍 }@else {🐁 }
+  </div>
+  }
+</div>
+}

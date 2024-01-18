@@ -1,6 +1,5 @@
 import {
   ChangeDetectionStrategy,
-  ChangeDetectorRef,
   Component,
 } from '@angular/core';
 import { StateService } from '../../shared/services/state.service';
@@ -16,7 +15,7 @@ import { CommonModule } from '@angular/common';
 })
 export class TableComponent {
   // ANCHOR : Constructor
-  constructor(public stateSvc: StateService, private _cd: ChangeDetectorRef) {}
+  constructor(public stateSvc: StateService) {}
 
   // ANCHOR : Methods
 }

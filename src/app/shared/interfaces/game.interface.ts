@@ -1,4 +1,3 @@
-
 export type IGameStatus = 'playing' | 'won' | 'lost' | 'stoped';
 
 export interface ISizeTable {
@@ -11,9 +10,4 @@ export interface IPosition {
   col: number;
 }
 
-export interface ICellState {
-  value: number | 'bomb' | 'empty' | 'explosion';
-  state: 'visible' | 'hidden' | 'flag' | 'question';
-}
-
-
+export type ICellState = 'snake' | 'empty' | 'food';
