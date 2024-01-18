@@ -11,3 +11,8 @@ export interface IPosition {
 }
 
 export type ICellState = 'snake' | 'empty' | 'food';
+
+export type IKeys = 'ArrowLeft' | 'ArrowRight' | 'ArrowDown' | 'ArrowUp';
+
+export const DIRECTIONS = ['left', 'right', 'down', 'up'] as const;
+export type IDirection = (typeof DIRECTIONS)[number];

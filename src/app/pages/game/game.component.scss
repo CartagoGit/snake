@@ -39,10 +39,9 @@ main {
   position: relative;
   flex-direction: column;
   gap: 10px;
-  padding: 0px;
-  // border: var(--border);
-  border: 10px solid;
-  border-color: var(--border-color-interior);
+  padding: 10px;
+  border: var(--border);
+  border-color: var(--border-color-exterior);
   .game-over {
     position: absolute;
     top: 0;
