@@ -7,6 +7,7 @@ import {
   IDirection,
   ISizeTable,
 } from '../interfaces/game.interface';
+import { Sprites } from '../models/sprites.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +16,11 @@ export class StateService {
   // ANCHOR : Properties
   public readonly title = "Cartago's Snake";
 
+  public sprites : Sprites = new Sprites();
+
   public gameStatus: WritableSignal<IGameStatus> = signal('playing');
+
+
 
   public maxPoints = signal(0);
 
@@ -36,6 +41,7 @@ export class StateService {
   constructor(private _localstorageSvc: LocalStorageService) {
     this._getDataFromLocalStorage();
     this.startGame();
+    console.log(this.sprites);
   }
 
   // ANCHOR : Private Methods

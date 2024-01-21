@@ -16,13 +16,33 @@ export type IKeys = 'ArrowLeft' | 'ArrowRight' | 'ArrowDown' | 'ArrowUp';
 
 export const DIRECTIONS = ['left', 'right', 'down', 'up'] as const;
 export type IDirection = (typeof DIRECTIONS)[number];
-export type IBody = 'vertical' | 'horizontal';
-export type ICurve = 'upLeft' | 'upRight' | 'downLeft' | 'downRight';
 
+export interface ISprites {
+  head: {
+    up: ISprite;
+    right: ISprite;
+    down: ISprite;
+    left: ISprite;
+  };
+  body: {
+    vertical: ISprite;
+    horizontal: ISprite;
+  };
+  tail: {
+    up: ISprite;
+    right: ISprite;
+    down: ISprite;
+    left: ISprite;
+  };
+  curve: {
+    upLeft: ISprite;
+    upRight: ISprite;
+    downLeft: ISprite;
+    downRight: ISprite;
+  };
+}
 
-export type IKindSprite = 'head' | 'body' | 'tail' | 'curve';
 export interface ISprite {
-  image: CanvasImageSource;
-  kind : IKindSprite;
-  direction: IDirection;
+  canvas: HTMLCanvasElement;
+  context: CanvasRenderingContext2D;
 }
