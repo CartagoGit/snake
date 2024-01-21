@@ -14,7 +14,7 @@ export class Sprites {
         console.log('OK', { spritesArray });
         this._spritesArray = spritesArray;
         this._assignSprites();
-        this._showTestSprites();
+        // this._showTestSprites();
       })
       .catch((error) => {
         console.error(error);
@@ -95,6 +95,7 @@ export class Sprites {
     };
   }
 
+  // Method to show the sprites in the DOM to test correct sprites from the sprite sheet
   private _showTestSprites(): void {
     for (const kindSprite in this.sprites) {
       const kindSpriteValue = this.sprites[kindSprite as keyof ISprites];
