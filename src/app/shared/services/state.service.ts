@@ -1,5 +1,10 @@
-import { DIRECTIONS, IGameStatus } from './../interfaces/game.interface';
-import { Injectable, WritableSignal, signal } from '@angular/core';
+import {
+  DIRECTIONS,
+  IGameStatus,
+  IPosition,
+  ISprites,
+} from './../interfaces/game.interface';
+import { Injectable, WritableSignal, computed, signal } from '@angular/core';
 
 import { LocalStorageService } from './local-storage.service';
 import {
@@ -16,11 +21,10 @@ export class StateService {
   // ANCHOR : Properties
   public readonly title = "Cartago's Snake";
 
-  public sprites : Sprites = new Sprites();
+  private _spritesModel: Sprites = new Sprites();
+  public sprites!: ISprites;
 
   public gameStatus: WritableSignal<IGameStatus> = signal('playing');
-
-
 
   public maxPoints = signal(0);
 
@@ -33,15 +37,28 @@ export class StateService {
 
   public snake: WritableSignal<number[][]> = signal([]);
 
-  public direction: WritableSignal<IDirection> = signal('up');
+  private _oposite: Record<IDirection, IDirection> = {
+    up: 'down',
+    down: 'up',
+    left: 'right',
+    right: 'left',
+  };
+
+  public direction: WritableSignal<IDirection> = signal(
+    this._getRandomDirection()
+  );
+  public opositeDirection = computed(() => this._oposite[this.direction()]);
 
   public table: WritableSignal<ICellState[][]> = signal([]);
 
   // ANCHOR : Constructor
   constructor(private _localstorageSvc: LocalStorageService) {
     this._getDataFromLocalStorage();
-    this.startGame();
-    console.log(this.sprites);
+    this._spritesModel.sprites$.subscribe((sprites) => {
+      if (!sprites) return;
+      this.sprites = sprites;
+      this.startGame();
+    });
   }
 
   // ANCHOR : Private Methods
@@ -78,14 +95,39 @@ export class StateService {
     const col =
       Math.floor(Math.random() * (this.size.cols - limitBetweenWalls * 2)) +
       limitBetweenWalls;
-    this.table()[row][col] = 'snake';
-    this.direction.set(this._getRandomDirection());
-    this.snake.set([[row, col]]);
+    const tailPosition = this._getPositionFromDirection({
+      direction: this.opositeDirection(),
+      position: { row, col },
+    });
+    this.table()[row][col] = this.sprites.head[this.direction()];
+    this.table()[tailPosition.row][tailPosition.col] =
+      this.sprites.tail[this.direction()];
+
+    this.direction.set(this.opositeDirection());
+    this.snake.set([
+      [row, col],
+      [tailPosition.row, tailPosition.col],
+    ]);
   }
 
   private _getRandomDirection(): IDirection {
     const index = Math.floor(Math.random() * 4);
     return DIRECTIONS[index];
+  }
+
+  private _getPositionFromDirection(data: {
+    direction: IDirection;
+    position: IPosition;
+  }): IPosition {
+    const { direction, position } = data;
+    const { row, col } = position;
+    const newPosition = {
+      up: { row: row - 1, col },
+      down: { row: row + 1, col },
+      left: { row, col: col - 1 },
+      right: { row, col: col + 1 },
+    };
+    return newPosition[direction];
   }
 
   // ANCHOR : Public Methods

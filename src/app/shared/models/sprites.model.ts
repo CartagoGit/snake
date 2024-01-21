@@ -1,20 +1,21 @@
+import { BehaviorSubject } from 'rxjs';
 import { ISprite, ISprites } from '../interfaces/game.interface';
 
 export class Sprites {
   // ANCHOR : Properties
   public readonly src: string = '/assets/images/snake-graphics.png';
   private _spritesArray!: ISprite[][];
-  public sprites!: ISprites;
+  private _sprites!: ISprites;
+  public sprites$: BehaviorSubject<ISprites> = new BehaviorSubject<ISprites>(
+    this._sprites
+  );
 
   // ANCHOR : Constructor
   constructor() {
-    console.log('Snake');
     this._getSprites()
       .then((spritesArray) => {
-        console.log('OK', { spritesArray });
         this._spritesArray = spritesArray;
         this._assignSprites();
-        // this._showTestSprites();
       })
       .catch((error) => {
         console.error(error);
@@ -24,7 +25,6 @@ export class Sprites {
   // ANCHOR : Methods
   private _getSprites(): Promise<ISprite[][]> {
     return new Promise((resolve, reject) => {
-      console.log('Promise');
       const columns = 5;
       const rows = 4;
       let sprites: ISprite[][] = [];
@@ -32,7 +32,6 @@ export class Sprites {
       spriteSheetImage.src = this.src;
 
       spriteSheetImage.onload = () => {
-        console.log('onload');
         const spriteWidth = spriteSheetImage.width / columns;
         const spriteHeight = spriteSheetImage.height / rows;
         for (let row = 0; row < rows; row++) {
@@ -41,6 +40,7 @@ export class Sprites {
             let canvas = document.createElement('canvas');
             canvas.width = spriteWidth;
             canvas.height = spriteHeight;
+            canvas.className = 'cell sprite';
             let context = canvas.getContext('2d')!;
             context.drawImage(
               spriteSheetImage,
@@ -62,14 +62,13 @@ export class Sprites {
         resolve(sprites);
       };
       spriteSheetImage.onerror = (error) => {
-        console.log('error', error);
         reject(error);
       };
     });
   }
 
-  private _assignSprites(): void {
-    this.sprites = {
+  private _assignSprites(): ISprites {
+    this._sprites = {
       head: {
         up: this._spritesArray[0][3],
         right: this._spritesArray[0][4],
@@ -93,12 +92,14 @@ export class Sprites {
         downRight: this._spritesArray[0][0],
       },
     };
+    this.sprites$.next(this._sprites);
+    return this._sprites;
   }
 
   // Method to show the sprites in the DOM to test correct sprites from the sprite sheet
   private _showTestSprites(): void {
-    for (const kindSprite in this.sprites) {
-      const kindSpriteValue = this.sprites[kindSprite as keyof ISprites];
+    for (const kindSprite in this._sprites) {
+      const kindSpriteValue = this._sprites[kindSprite as keyof ISprites];
       for (const sprite in kindSpriteValue) {
         const spriteValue: ISprite =
           kindSpriteValue[sprite as keyof typeof kindSpriteValue];

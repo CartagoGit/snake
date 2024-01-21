@@ -1,9 +1,23 @@
 @for (row of stateSvc.table(); let rowIndex = $index; track rowIndex){
 <div class="row">
   @for (cell of row; let cellIndex = $index; track cellIndex){
-  <div class="cell">
-    @if(cell === 'empty'){ }@else if(cell === 'snake'){ 🐍 }@else {🐁 }
-  </div>
+
+  <div class="cell">@if(cell === 'food'){🐁}</div>
   }
 </div>
 }
+
+<div class="sprites">
+  @for (row of stateSvc.table(); let rowIndex = $index; track rowIndex){
+  <div class="row">
+    @for (cell of row; let cellIndex = $index; track cellIndex){
+      @if(cell !==
+    'empty' && cell !== 'food'){
+    <img src="{{ cell.canvas.toDataURL() }}" class="cell sprite" />
+    }@else {
+    <div class="cell sprite"></div>
+    }
+  }
+  </div>
+  }
+</div>
