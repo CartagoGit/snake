@@ -20,8 +20,8 @@ export class StateService {
   public maxPoints = signal(0);
 
   public readonly size: ISizeTable = {
-    cols: 50,
-    rows: 20,
+    cols: 30,
+    rows: 18,
     // cols: 5,
     // rows: 5,
   };
