@@ -26,6 +26,17 @@ export class StateService {
 
   public gameStatus: WritableSignal<IGameStatus> = signal('playing');
 
+  public ateFood = signal(0);
+
+  public speed = computed(() => {
+    const ateFood = this.ateFood();
+    const startSpeed = 1000;
+    const speedIncrement = 10;
+    const maxSpeed = 1;
+    const speed = startSpeed - ateFood * speedIncrement;
+    return speed < maxSpeed ? maxSpeed : speed;
+  });
+
   public maxPoints = signal(0);
 
   public readonly size: ISizeTable = {
