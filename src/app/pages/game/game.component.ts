@@ -5,6 +5,7 @@ import { FooterComponent } from '../../components/footer/footer.component';
 import { StateService } from '../../shared/services/state.service';
 
 import { CommonModule } from '@angular/common';
+import { Snake } from '../../shared/models/snake.model';
 
 @Component({
   selector: 'app-game',
@@ -20,5 +21,7 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameComponent {
-  constructor(public stateSvc: StateService) {}
+  constructor(public stateSvc: StateService) {
+    const snake = new Snake();
+  }
 }

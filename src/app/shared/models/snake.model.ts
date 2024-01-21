@@ -20,8 +20,10 @@ export class Snake {
   // ANCHOR : Constructor
   constructor() {
     this._getSprites().then((spriteSheet) => {
+      console.log(spriteSheet);
       this._spriteSheet = spriteSheet;
       this._assignSprites();
+      this._displaySprites();
     });
   }
 
@@ -61,7 +63,7 @@ export class Snake {
             };
           }
         }
-        resolve(spriteSheetImage);
+        resolve(sprites);
       };
       spriteSheetImage.onerror = (error) => {
         reject(error);
@@ -94,5 +96,23 @@ export class Snake {
         downRight: this._spriteSheet[0][0],
       },
     };
+  }
+
+  private _displaySprites(): void {
+    Object.values(this._sprite).forEach((kindSprite: any) => {
+      Object.values(kindSprite).forEach((directionSprite: any) => {
+        let sprite = directionSprite as ISprite;
+        let canvas = document.createElement('canvas');
+        if (sprite.image instanceof HTMLCanvasElement) {
+          canvas.width = sprite.image.width;
+          canvas.height = sprite.image.height;
+        } else {
+          console.error('La imagen no es una instancia de HTMLCanvasElement');
+        }
+        let ctx = canvas.getContext('2d')!;
+        ctx.drawImage(sprite.image, 0, 0);
+        document.body.appendChild(canvas);
+      });
+    });
   }
 }
