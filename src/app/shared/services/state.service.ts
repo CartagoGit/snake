@@ -5,13 +5,8 @@ import {
   ISprites,
 } from './../interfaces/game.interface';
 import { Injectable, WritableSignal, computed, signal } from '@angular/core';
-
 import { LocalStorageService } from './local-storage.service';
-import {
-  ICellState,
-  IDirection,
-  ISizeTable,
-} from '../interfaces/game.interface';
+import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
 
 @Injectable({
@@ -24,9 +19,18 @@ export class StateService {
   private _spritesModel: Sprites = new Sprites();
   public sprites!: ISprites;
 
-  public gameStatus: WritableSignal<IGameStatus> = signal('playing');
+  public readonly size: ISizeTable = {
+    cols: 30,
+    rows: 18,
+    // cols: 5,
+    // rows: 5,
+  };
 
+  public gameStatus: WritableSignal<IGameStatus> = signal('playing');
+  public snake: WritableSignal<number[][]> = signal([]);
   public ateFood = signal(0);
+
+  public food = signal<IPosition>(this._createFood());
 
   public speed = computed(() => {
     const ateFood = this.ateFood();
@@ -38,15 +42,6 @@ export class StateService {
   });
 
   public maxPoints = signal(0);
-
-  public readonly size: ISizeTable = {
-    cols: 30,
-    rows: 18,
-    // cols: 5,
-    // rows: 5,
-  };
-
-  public snake: WritableSignal<number[][]> = signal([]);
 
   private _oposite: Record<IDirection, IDirection> = {
     up: 'down',
@@ -60,7 +55,10 @@ export class StateService {
   );
   public opositeDirection = computed(() => this._oposite[this.direction()]);
 
-  public table: WritableSignal<ICellState[][]> = signal([]);
+  // public table: WritableSignal<ICellState[][]> = signal([]);
+  public table: null[][] = new Array(this.size.rows).fill(
+    new Array(this.size.cols).fill(null)
+  );
 
   // ANCHOR : Constructor
   constructor(private _localstorageSvc: LocalStorageService) {
@@ -84,24 +82,17 @@ export class StateService {
     this._localstorageSvc.saveMaxPoinst(this.maxPoints());
   }
 
-  private _createNewTable(): void {
-    this.table.set(
-      new Array(this.size.rows)
-        .fill([])
-        .map(() => new Array<ICellState>(this.size.cols).fill('empty'))
-    );
-  }
-
-  private _createFood(): void {
+  private _createFood(): IPosition {
     const row = Math.floor(Math.random() * this.size.rows);
     const col = Math.floor(Math.random() * this.size.cols);
-    const table = this.table();
-    const value = table[row][col];
-    if (value === 'empty') table[row][col] = 'food';
-    else this._createFood();
+    const isFilled = this.snake().some(
+      (position) => position[0] === row && position[1] === col
+    );
+    if (isFilled) return this._createFood();
+    return { row, col };
   }
 
-  private _createSnake(): void {
+  private _createSnake(): IPosition[] {
     const limitBetweenWalls = 2;
     const row =
       Math.floor(Math.random() * (this.size.rows - limitBetweenWalls * 2)) +
@@ -109,19 +100,13 @@ export class StateService {
     const col =
       Math.floor(Math.random() * (this.size.cols - limitBetweenWalls * 2)) +
       limitBetweenWalls;
+    const headPosition = { row, col };
     const tailPosition = this._getPositionFromDirection({
       direction: this.opositeDirection(),
-      position: { row, col },
+      position: headPosition,
     });
-    // this.table()[row][col] = this.sprites.head[this.direction()];
-    // this.table()[tailPosition.row][tailPosition.col] =
-    //   this.sprites.tail[this.direction()];
 
-    // this.direction.set(this.opositeDirection());
-    this.snake.set([
-      [row, col],
-      [tailPosition.row, tailPosition.col],
-    ]);
+    return [{ row, col }, tailPosition];
   }
 
   private _getRandomDirection(): IDirection {
@@ -146,7 +131,6 @@ export class StateService {
 
   // ANCHOR : Public Methods
   public startGame(): void {
-    this._createNewTable();
     this._createSnake();
     this._createFood();
   }
@@ -155,32 +139,5 @@ export class StateService {
     this.gameStatus.set(state);
   }
 
-  public moveSnake(): void {
-    console.log('moveSnake', this.direction());
-    const snake = this.snake();
-    const table = this.table();
-    const head = snake[0];
-    const newHead = this._getPositionFromDirection({
-      direction: this.direction(),
-      position: { row: head[0], col: head[1] },
-    });
-    const value = table?.[newHead.row]?.[newHead.col];
-    if (value === 'food') {
-      this.ateFood.set(this.ateFood() + 1);
-      this._createFood();
-    } else if (value !== 'empty') {
-      this.stopGame('lost');
-      console.log('lost');
-      return;
-    }
-    const tail = snake.pop()!;
-    table[tail[0]][tail[1]] = 'empty';
-    snake.unshift([newHead.row, newHead.col]);
-    console.log('snake', snake);
-    // table[snake[0][0]][snake[0][1]] = this.sprites.head[this.direction()];
-    // table[snake[snake.length - 1][0]][snake[snake.length - 1][1]] =
-    //   this.sprites.tail.left;
-    // this.table.set(table);
-    // this.snake.set(snake);
-  }
+  public moveSnake(): void {}
 }

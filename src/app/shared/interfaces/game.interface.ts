@@ -10,7 +10,7 @@ export interface IPosition {
   col: number;
 }
 
-export type ICellState = 'empty' | 'food';
+// export type ISnakePosition =
 
 export type IKeys = 'ArrowLeft' | 'ArrowRight' | 'ArrowDown' | 'ArrowUp';
 
