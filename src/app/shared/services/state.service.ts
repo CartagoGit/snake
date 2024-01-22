@@ -113,9 +113,9 @@ export class StateService {
       direction: this.opositeDirection(),
       position: { row, col },
     });
-    this.table()[row][col] = this.sprites.head[this.direction()];
-    this.table()[tailPosition.row][tailPosition.col] =
-      this.sprites.tail[this.direction()];
+    // this.table()[row][col] = this.sprites.head[this.direction()];
+    // this.table()[tailPosition.row][tailPosition.col] =
+    //   this.sprites.tail[this.direction()];
 
     // this.direction.set(this.opositeDirection());
     this.snake.set([

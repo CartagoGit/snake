@@ -13,7 +13,7 @@
     @for (cell of row; let cellIndex = $index; track cellIndex){
       @if(cell !==
     'empty' && cell !== 'food'){
-    <img src="{{ cell.canvas.toDataURL() }}" class="cell sprite" />
+    <!-- <img src="{{ cell.canvas.toDataURL() }}" class="cell sprite" /> -->
     }@else {
     <div class="cell sprite"></div>
     }
