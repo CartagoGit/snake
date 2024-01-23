@@ -1,10 +1,13 @@
-@for (row of stateSvc.table; let rowIndex = $index; track rowIndex){
-<div class="row">
-  @for (col of row; let colIndex = $index; track colIndex){
-  <div class="cell">
-    @if(colIndex === stateSvc.food().col && rowIndex === stateSvc.food().row){
-    🐁 }
+@for (row of stateSvc.table; let rowIndex = $index; track rowIndex) {
+  <div class="row">
+    @for (col of row; let colIndex = $index; track colIndex) {
+      <div class="cell">
+        @if (
+          colIndex === stateSvc.food().col && rowIndex === stateSvc.food().row
+        ) {
+          🐁
+        }
+      </div>
+    }
   </div>
-  }
-</div>
 }

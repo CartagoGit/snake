@@ -7,7 +7,7 @@ export class Sprites {
   private _spritesArray!: ISprite[][];
   private _sprites!: ISprites;
   public sprites$: BehaviorSubject<ISprites> = new BehaviorSubject<ISprites>(
-    this._sprites
+    this._sprites,
   );
 
   // ANCHOR : Constructor
@@ -51,7 +51,7 @@ export class Sprites {
               0,
               0,
               spriteWidth,
-              spriteHeight
+              spriteHeight,
             );
             sprites[row][col] = {
               canvas,

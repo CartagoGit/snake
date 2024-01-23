@@ -13,5 +13,4 @@ import { TitleCasePipe } from '@angular/common';
 export class FooterComponent {
   // ANCHOR : Constructor
   constructor(public stateSvc: StateService) {}
-
 }

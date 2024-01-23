@@ -15,7 +15,5 @@ import { CommonModule } from '@angular/common';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class GameComponent {
-  constructor(public stateSvc: StateService) {
-    
-  }
+  constructor(public stateSvc: StateService) {}
 }

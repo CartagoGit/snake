@@ -1,7 +1,4 @@
-import {
-  ChangeDetectionStrategy,
-  Component,
-} from '@angular/core';
+import { ChangeDetectionStrategy, Component } from '@angular/core';
 import { StateService } from '../../shared/services/state.service';
 import { CommonModule } from '@angular/common';
 

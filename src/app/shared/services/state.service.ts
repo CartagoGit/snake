@@ -55,7 +55,6 @@ export class StateService {
   );
   public opositeDirection = computed(() => this._oposite[this.direction()]);
 
-  // public table: WritableSignal<ICellState[][]> = signal([]);
   public table: null[][] = new Array(this.size.rows).fill(
     new Array(this.size.cols).fill(null)
   );
