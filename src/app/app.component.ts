@@ -30,7 +30,9 @@ export class AppComponent {
       ArrowDown: 'down',
       ArrowUp: 'up',
     };
-
+    const oposite = this._stateSvc.snake()[0].from;
+    const newDirection = direction[key];
+    if (oposite === newDirection) return;
     this._stateSvc.direction.set(direction[key]);
   }
 

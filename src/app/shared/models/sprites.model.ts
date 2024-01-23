@@ -1,5 +1,10 @@
 import { BehaviorSubject } from 'rxjs';
-import { ISprite, ISprites } from '../interfaces/game.interface';
+import {
+  ISnakeKindBody,
+  ISprite,
+  ISpriteDirection,
+  ISprites,
+} from '../interfaces/game.interface';
 
 export class Sprites {
   // ANCHOR : Properties
@@ -9,6 +14,30 @@ export class Sprites {
   public sprites$: BehaviorSubject<ISprites> = new BehaviorSubject<ISprites>(
     this._sprites,
   );
+  private _spritesPosition = {
+    head: {
+      up: { row: 0, col: 3 },
+      right: { row: 0, col: 4 },
+      down: { row: 1, col: 4 },
+      left: { row: 1, col: 3 },
+    },
+    body: {
+      vertical: { row: 1, col: 2 },
+      horizontal: { row: 0, col: 1 },
+    },
+    tail: {
+      up: { row: 2, col: 3 },
+      right: { row: 2, col: 4 },
+      down: { row: 3, col: 4 },
+      left: { row: 3, col: 3 },
+    },
+    curve: {
+      downLeft: { row: 2, col: 2 },
+      downRight: { row: 1, col: 0 },
+      upLeft: { row: 0, col: 2 },
+      upRight: { row: 0, col: 0 },
+    },
+  };
 
   // ANCHOR : Constructor
   constructor() {
@@ -16,6 +45,7 @@ export class Sprites {
       .then((spritesArray) => {
         this._spritesArray = spritesArray;
         this._assignSprites();
+        // this._showTestSprites();
       })
       .catch((error) => {
         console.error(error);
@@ -53,10 +83,23 @@ export class Sprites {
               spriteWidth,
               spriteHeight,
             );
-            sprites[row][col] = {
-              canvas,
-              context,
-            };
+            KindSprite: for (let [keyKind, valueKind] of Object.entries(
+              this._spritesPosition,
+            )) {
+              for (let [keyDirection, valueDirection] of Object.entries(
+                valueKind,
+              )) {
+                if (valueDirection.row === row && valueDirection.col === col) {
+                  sprites[row][col] = {
+                    canvas,
+                    context,
+                    kind: keyKind as ISnakeKindBody,
+                    direction: keyDirection as ISpriteDirection,
+                  };
+                  break KindSprite;
+                }
+              }
+            }
           }
         }
         resolve(sprites);
@@ -70,26 +113,63 @@ export class Sprites {
   private _assignSprites(): ISprites {
     this._sprites = {
       head: {
-        up: this._spritesArray[0][3],
-        right: this._spritesArray[0][4],
-        down: this._spritesArray[1][4],
-        left: this._spritesArray[1][3],
+        up: this._spritesArray[this._spritesPosition.head.up.row][
+          this._spritesPosition.head.up.col
+        ],
+
+        right:
+          this._spritesArray[this._spritesPosition.head.right.row][
+            this._spritesPosition.head.right.col
+          ],
+        down: this._spritesArray[this._spritesPosition.head.down.row][
+          this._spritesPosition.head.down.col
+        ],
+        left: this._spritesArray[this._spritesPosition.head.left.row][
+          this._spritesPosition.head.left.col
+        ],
       },
       body: {
-        vertical: this._spritesArray[0][1],
-        horizontal: this._spritesArray[1][2],
+        vertical:
+          this._spritesArray[this._spritesPosition.body.vertical.row][
+            this._spritesPosition.body.vertical.col
+          ],
+        horizontal:
+          this._spritesArray[this._spritesPosition.body.horizontal.row][
+            this._spritesPosition.body.horizontal.col
+          ],
       },
       tail: {
-        up: this._spritesArray[2][3],
-        right: this._spritesArray[2][4],
-        down: this._spritesArray[3][4],
-        left: this._spritesArray[3][3],
+        up: this._spritesArray[this._spritesPosition.tail.up.row][
+          this._spritesPosition.tail.up.col
+        ],
+        right:
+          this._spritesArray[this._spritesPosition.tail.right.row][
+            this._spritesPosition.tail.right.col
+          ],
+        down: this._spritesArray[this._spritesPosition.tail.down.row][
+          this._spritesPosition.tail.down.col
+        ],
+        left: this._spritesArray[this._spritesPosition.tail.left.row][
+          this._spritesPosition.tail.left.col
+        ],
       },
       curve: {
-        upLeft: this._spritesArray[2][2],
-        upRight: this._spritesArray[0][1],
-        downLeft: this._spritesArray[0][2],
-        downRight: this._spritesArray[0][0],
+        upLeft:
+          this._spritesArray[this._spritesPosition.curve.upLeft.row][
+            this._spritesPosition.curve.upLeft.col
+          ],
+        upRight:
+          this._spritesArray[this._spritesPosition.curve.upRight.row][
+            this._spritesPosition.curve.upRight.col
+          ],
+        downLeft:
+          this._spritesArray[this._spritesPosition.curve.downLeft.row][
+            this._spritesPosition.curve.downLeft.col
+          ],
+        downRight:
+          this._spritesArray[this._spritesPosition.curve.downRight.row][
+            this._spritesPosition.curve.downRight.col
+          ],
       },
     };
     this.sprites$.next(this._sprites);

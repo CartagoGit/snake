@@ -4,6 +4,9 @@ import {
   IGameStatus,
   IPosition,
   ISnakeBody,
+  ISnakeKindBody,
+  ISprite,
+  ISpriteDirection,
   ISprites,
 } from './../interfaces/game.interface';
 import { Injectable, WritableSignal, computed, signal } from '@angular/core';
@@ -20,6 +23,7 @@ export class StateService {
 
   private _spritesModel: Sprites = new Sprites();
   public sprites!: ISprites;
+  public spritesArray: ISprite[] = [];
 
   public readonly size: ISizeTable = {
     cols: 30,
@@ -31,6 +35,7 @@ export class StateService {
   public gameStatus: WritableSignal<IGameStatus> = signal('playing');
   public snake: WritableSignal<ISnakeBody[]> = signal([]);
   public ateFood = signal(0);
+  public food: WritableSignal<IPosition | undefined> = signal(undefined);
 
   public speed = computed(() => {
     const ateFood = this.ateFood();
@@ -43,7 +48,7 @@ export class StateService {
 
   public maxPoints = signal(0);
 
-  private _oposite: Record<IDirection, IDirection> = {
+  private _opposite: Record<IDirection, IDirection> = {
     up: 'down',
     down: 'up',
     left: 'right',
@@ -53,7 +58,7 @@ export class StateService {
   public direction: WritableSignal<IDirection> = signal(
     this._getRandomDirection(),
   );
-  public opositeDirection = computed(() => this._oposite[this.direction()]);
+  public oppositeDirection = computed(() => this._opposite[this.direction()]);
 
   public table: WritableSignal<ICell[][]> = signal([]);
 
@@ -63,6 +68,13 @@ export class StateService {
     this._spritesModel.sprites$.subscribe((sprites) => {
       if (!sprites) return;
       this.sprites = sprites;
+      // NOTE FOR TESTING
+      for (let kindSprites of Object.values(sprites)) {
+        for (let spriteDirection of Object.values(kindSprites)) {
+          const sprite = spriteDirection as ISprite;
+          this.spritesArray.push(sprite);
+        }
+      }
       this.startGame();
       setInterval(() => {
         this.moveSnake();
@@ -106,19 +118,19 @@ export class StateService {
       limitBetweenWalls;
     const headPosition = { row, col };
     const tailPosition = this._getPositionFromDirection({
-      direction: this.opositeDirection(),
+      direction: this.oppositeDirection(),
       position: headPosition,
     });
     const head: ISnakeBody = {
       kind: 'head',
-      from: this.opositeDirection(),
+      from: this.oppositeDirection(),
       to: this.direction(),
       position: headPosition,
       sprite: this.sprites.head[this.direction()],
     };
     const tail: ISnakeBody = {
       kind: 'tail',
-      from: this.opositeDirection(),
+      from: this.oppositeDirection(),
       to: this.direction(),
       position: tailPosition,
       sprite: this.sprites.tail[this.direction()],
@@ -147,6 +159,81 @@ export class StateService {
     return newPosition[direction];
   }
 
+  private _getBodySnake(data: {
+    beforeHead: ISnakeBody;
+    newHead: ISnakeBody;
+    snake: ISnakeBody[];
+  }): ISnakeBody {
+    const { newHead, snake, beforeHead } = data;
+
+    const before = snake[1];
+    const actual = snake[0];
+    const next = newHead;
+    const { row: beforeRow, col: beforeCol } = before.position;
+    const { row: actualRow, col: actualCol } = actual.position;
+    const { row: nextRow, col: nextCol } = next.position;
+
+    const isBody =
+      (beforeRow === actualRow && actualRow === nextRow) ||
+      (beforeCol === actualCol && actualCol === nextCol);
+
+    const kindBody: 'body' | 'curve' = isBody ? 'body' : 'curve';
+
+    if (kindBody === 'body') {
+      const kindSprite =
+        newHead.to === 'up' || newHead.to === 'down'
+          ? 'vertical'
+          : 'horizontal';
+      snake[0] = {
+        ...snake[0],
+        kind: 'body',
+        sprite: this.sprites[kindBody][kindSprite],
+      };
+    } else if (kindBody === 'curve') {
+      let betweenBeforeAndActual: IDirection;
+      if (beforeRow === actualRow) {
+        betweenBeforeAndActual = beforeCol < actualCol ? 'right' : 'left';
+      } else if (beforeCol === actualCol) {
+        betweenBeforeAndActual = beforeRow < actualRow ? 'down' : 'up';
+      }
+      let betweenActualAndNext: IDirection;
+      if (actualRow === nextRow) {
+        betweenActualAndNext = actualCol < nextCol ? 'right' : 'left';
+      } else if (actualCol === nextCol) {
+        betweenActualAndNext = actualRow < nextRow ? 'down' : 'up';
+      }
+      const vertical = (['up', 'down'] as IDirection[]).includes(
+        betweenBeforeAndActual!,
+      )
+        ? betweenBeforeAndActual!
+        : betweenActualAndNext!;
+
+      const horizontal = (['left', 'right'] as IDirection[]).includes(
+        betweenBeforeAndActual!,
+      )
+        ? betweenBeforeAndActual!
+        : betweenActualAndNext!;
+      let kindSprite = (vertical +
+        horizontal[0].toUpperCase() +
+        horizontal.slice(1)) as 'upLeft' | 'upRight' | 'downLeft' | 'downRight';
+      console.log({
+        vertical,
+        horizontal,
+        kindSprite,
+        kindBody,
+      });
+      console.log({
+        sprite: JSON.parse(JSON.stringify(this.sprites[kindBody][kindSprite])),
+      });
+      snake[0] = {
+        ...snake[0],
+        kind: 'body',
+        sprite: this.sprites[kindBody][kindSprite],
+      };
+    }
+    return snake[0];
+  }
+
   // ANCHOR : Public Methods
   public startGame(): void {
     this._createFood();
@@ -156,6 +243,7 @@ export class StateService {
       newTable[part.position.row][part.position.col] = 'snake';
     });
     const food = this._createFood();
+    this.food.set(food);
     newTable[food.row][food.col] = 'food';
     this.table.set(newTable);
   }
@@ -174,7 +262,7 @@ export class StateService {
     });
     const newHead: ISnakeBody = {
       kind: 'head',
-      from: this.opositeDirection(),
+      from: this.oppositeDirection(),
       to: this.direction(),
       position: newHeadPosition,
       sprite: this.sprites.head[this.direction()],
@@ -197,9 +285,48 @@ export class StateService {
       position: lastBodyPart.position,
       sprite: this.sprites.tail[tailDirection],
     };
+    // TODO Si la serpiente ha ocupado todos los caminos controlar que se ha ganado y no se puede generar comida
+    const food = this.food();
+    if (
+      food &&
+      newHeadPosition.row === food.row &&
+      newHeadPosition.col === food.col
+    ) {
+      this.ateFood.update((ateFood) => ateFood + 1);
+      this.snake.update((snake) => {
+        const newBodySnake = this._getBodySnake({
+          beforeHead: head,
+          newHead,
+          snake,
+        });
+        snake[0] = newBodySnake;
+        // snake[snake.length - 1] = newTail;
+        snake.unshift(newHead);
+        console.log(snake);
+        return [...snake];
+      });
+      this.table.update((table) => {
+        table[food.row][food.col] = null;
+        const newFood = this._createFood();
+        this.food.set(newFood);
+        table[newFood.row][newFood.col] = 'food';
+        table[newHeadPosition.row][newHeadPosition.col] = 'snake';
+        return [...table];
+      });
+      return;
+    }
+
     this.snake.update((snake) => {
+      if (snake.length > 2) {
+        snake[0] = this._getBodySnake({
+          beforeHead: head,
+          newHead,
+          snake,
+        });
+      }
       snake.pop();
       snake[snake.length - 1] = newTail;
+
       snake.unshift(newHead);
       return [...snake];
     });

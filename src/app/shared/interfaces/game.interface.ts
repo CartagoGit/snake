@@ -17,8 +17,10 @@ export type IKeys = 'ArrowLeft' | 'ArrowRight' | 'ArrowDown' | 'ArrowUp';
 export const DIRECTIONS = ['left', 'right', 'down', 'up'] as const;
 export type IDirection = (typeof DIRECTIONS)[number];
 
+export type ISnakeKindBody = 'head' | 'body' | 'tail' | 'curve';
+
 export interface ISnakeBody {
-  kind: 'head' | 'body' | 'tail' | 'curve';
+  kind: ISnakeKindBody;
   from: IDirection;
   to: IDirection;
   position: IPosition;
@@ -49,8 +51,18 @@ export interface ISprites {
     downRight: ISprite;
   };
 }
-
+export type ISpriteDirection =
+  | IDirection
+  | 'upLeft'
+  | 'upRight'
+  | 'downLeft'
+  | 'downRight'
+  | 'vertical'
+  | 'horizontal';
+  
 export interface ISprite {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;
+  kind: ISnakeKindBody;
+  direction: ISpriteDirection;
 }

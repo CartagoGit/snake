@@ -23,7 +23,12 @@
     }
   </div>
 }
-<!-- 
+
+@for (sprite of stateSvc.spritesArray; track $index) {
+  <img class="sprite" [src]="sprite.canvas.toDataURL()" class="cell" />
+  {{ sprite.direction }} - {{ sprite.kind }}
+}
+<!--
 @for (row of stateSvc.table(); let rowIndex = $index; track rowIndex) {
   <div class="row">
     @for (cell of row; let colIndex = $index; track colIndex) {
@@ -36,4 +41,3 @@
   </div>
 }
  -->
-
