@@ -24,8 +24,8 @@ export class StateService {
   public readonly size: ISizeTable = {
     cols: 30,
     rows: 18,
-    // cols: 5,
-    // rows: 5,
+    // cols: 10,
+    // rows: 10,
   };
 
   public gameStatus: WritableSignal<IGameStatus> = signal('playing');
@@ -66,7 +66,7 @@ export class StateService {
       this.startGame();
       setInterval(() => {
         this.moveSnake();
-      }, 1000);
+      }, 100);
     });
   }
 
@@ -180,19 +180,29 @@ export class StateService {
       position: newHeadPosition,
       sprite: this.sprites.head[this.direction()],
     };
+    if(newHeadPosition.row < 0 || newHeadPosition.row >= this.size.rows || newHeadPosition.col < 0 || newHeadPosition.col >= this.size.cols){
+      this.stopGame('lost');
+      return;
+    }
+    const lastBodyPart = snake[snake.length - 2];
     const newTail: ISnakeBody = {
       kind: 'tail',
-      from: tail.from,
-      to: tail.to,
-      position: tail.position,
-      sprite: this.sprites.tail[tail.to],
+      from: lastBodyPart.from,
+      to: lastBodyPart.to,
+      position: lastBodyPart.position,
+      sprite: this.sprites.tail[lastBodyPart.to],
     };
-    const newSnake = [newHead, ...snake.slice(0, -1), newTail];
-    this.snake.set(newSnake);
+
+    this.snake.update((snake) => {
+      snake.pop();
+      snake[snake.length - 1] = newTail;
+      snake.unshift(newHead);
+      return [...snake];
+    });
     this.table.update((table) => {
       table[tail.position.row][tail.position.col] = null;
       table[newHeadPosition.row][newHeadPosition.col] = 'snake';
-      return table;
-    })
+      return [...table];
+    });
   }
 }
