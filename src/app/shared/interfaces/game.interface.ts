@@ -10,12 +10,20 @@ export interface IPosition {
   col: number;
 }
 
-// export type ISnakePosition =
+export type ICell = null | 'food' | 'snake';
 
 export type IKeys = 'ArrowLeft' | 'ArrowRight' | 'ArrowDown' | 'ArrowUp';
 
 export const DIRECTIONS = ['left', 'right', 'down', 'up'] as const;
 export type IDirection = (typeof DIRECTIONS)[number];
+
+export interface ISnakeBody {
+  kind: 'head' | 'body' | 'tail' | 'curve';
+  from: IDirection;
+  to: IDirection;
+  position: IPosition;
+  sprite: ISprite;
+}
 
 export interface ISprites {
   head: {

@@ -1,12 +1,24 @@
-@for (row of stateSvc.table; let rowIndex = $index; track rowIndex) {
+@for (row of stateSvc.table(); let rowIndex = $index; track rowIndex) {
   <div class="row">
-    @for (col of row; let colIndex = $index; track colIndex) {
-      <div class="cell">
-        @if (
-          colIndex === stateSvc.food().col && rowIndex === stateSvc.food().row
-        ) {
-          🐁
-        }
+    @for (cell of row; let colIndex = $index; track colIndex) {
+      <div class="parent-cell">
+        <div class="cell">
+          @if (cell === "food") {
+            🐁
+          } @else if (cell === "snake") {
+            <img
+              class="sprite"
+              [src]="
+                (
+                  {
+                    snake: stateSvc.snake(),
+                    cellPos: { row: rowIndex, col: colIndex }
+                  } | getSnakeSprite
+                ).toDataURL()
+              "
+            />
+          }
+        </div>
       </div>
     }
   </div>

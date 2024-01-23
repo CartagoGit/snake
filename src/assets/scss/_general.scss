@@ -99,6 +99,9 @@ input {
 .row {
   display: flex;
 }
+.parent-cell {
+  position: relative;
+}
 
 .cell {
   width: 30px;
@@ -109,23 +112,17 @@ input {
   transition: ease 0.2s all;
   box-sizing: border-box;
   user-select: none;
-
-  &.sprite {
-    border: 0px;
-  }
-  &--not-visible {
-    cursor: pointer;
-    border: 3px solid var(--gray-800);
-    border-color: var(--border-color-exterior);
-    &:active {
-      border-color: var(--border-color-interior);
-    }
-    &:hover {
-      background-color: var(--gray-500);
-    }
-  }
 }
 
+.sprite {
+  position: absolute;
+  top: 0;
+  left: 0;
+  border: 0px;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
 .piece {
   border: 4px inset var(--gray-500);
 }
