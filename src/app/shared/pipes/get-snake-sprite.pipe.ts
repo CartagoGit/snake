@@ -18,7 +18,6 @@ export class GetSnakeSpritePipe implements PipeTransform {
       (part) => part.position.row === row && part.position.col === col,
     )!;
     const { sprite } = part;
-
     return sprite.canvas;
   }
 }

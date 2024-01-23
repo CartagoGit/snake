@@ -66,7 +66,7 @@ export class StateService {
       this.startGame();
       setInterval(() => {
         this.moveSnake();
-      }, 100);
+      }, 300);
     });
   }
 
@@ -157,7 +157,6 @@ export class StateService {
     });
     const food = this._createFood();
     newTable[food.row][food.col] = 'food';
-
     this.table.set(newTable);
   }
 
@@ -180,19 +179,24 @@ export class StateService {
       position: newHeadPosition,
       sprite: this.sprites.head[this.direction()],
     };
-    if(newHeadPosition.row < 0 || newHeadPosition.row >= this.size.rows || newHeadPosition.col < 0 || newHeadPosition.col >= this.size.cols){
+    if (
+      newHeadPosition.row < 0 ||
+      newHeadPosition.row >= this.size.rows ||
+      newHeadPosition.col < 0 ||
+      newHeadPosition.col >= this.size.cols
+    ) {
       this.stopGame('lost');
       return;
     }
     const lastBodyPart = snake[snake.length - 2];
+    const tailDirection = this.ateFood() === 0 ? this.direction() : tail.to;
     const newTail: ISnakeBody = {
       kind: 'tail',
       from: lastBodyPart.from,
-      to: lastBodyPart.to,
+      to: tailDirection,
       position: lastBodyPart.position,
-      sprite: this.sprites.tail[lastBodyPart.to],
+      sprite: this.sprites.tail[tailDirection],
     };
-
     this.snake.update((snake) => {
       snake.pop();
       snake[snake.length - 1] = newTail;
