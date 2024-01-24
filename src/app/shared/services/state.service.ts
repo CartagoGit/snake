@@ -7,7 +7,13 @@ import {
   ISprite,
   ISprites,
 } from './../interfaces/game.interface';
-import { Injectable, WritableSignal, computed, signal } from '@angular/core';
+import {
+  Injectable,
+  WritableSignal,
+  computed,
+  signal,
+  untracked,
+} from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
@@ -26,7 +32,7 @@ export class StateService {
   public spritesArray: ISprite[] = [];
 
   public readonly size: ISizeTable = {
-    cols: 20,
+    cols: 28,
     rows: 15,
     // cols: 10,
     // rows: 10,
@@ -47,12 +53,44 @@ export class StateService {
   });
 
   private _gameTime = signal(0);
+  public gameTimeFormated = computed(() => {
+    let hoursNum = Math.floor(this._gameTime() / 3600);
+    let minutesNum = Math.floor((this._gameTime() % 3600) / 60);
+    let secondsNum = Math.floor((this._gameTime() % 3600) % 60);
+    const [hours, minutes, seconds] = [hoursNum, minutesNum, secondsNum].map(
+      (num) => num.toString().padStart(2, '0'),
+    );
+    return `${hours}:${minutes}:${seconds}`;
+  });
   private _intervalSubscription: Subscription | undefined = undefined;
   private _speedSubscription: Subscription | undefined = undefined;
   private _timeSubscription: Subscription | undefined = undefined;
 
   public maxPoints = signal(0);
-  public points = signal(0);
+  private _actualPoints = 0;
+  private _lastTimePoints: number = 0;
+  public points = computed(() => {
+    if (this.ateFood() === 0) {
+      this._actualPoints = 0;
+      this._lastTimePoints = 0;
+      return 0;
+    }
+    const actualPoints = this._actualPoints + 10;
+
+    const timeForExtraPoints = 20;
+    const timePointsIncrementPerSecond = 1;
+    const actualTimePoints = this._lastTimePoints
+      ? (new Date().getTime() - this._lastTimePoints) / 1000
+      : untracked(this._gameTime);
+
+    const calculatedTimePoints = Math.floor(
+      timeForExtraPoints - actualTimePoints,
+    );
+    const timePoints = calculatedTimePoints > 0 ? calculatedTimePoints : 0;
+    this._actualPoints = actualPoints + timePoints;
+    this._lastTimePoints = new Date().getTime();
+    return this._actualPoints < 0 ? 0 : this._actualPoints;
+  });
 
   private _opposite: Record<IDirection, IDirection> = {
     up: 'down',
@@ -215,7 +253,7 @@ export class StateService {
         if (actualRow < nextRow) betweenActualAndNext = 'down';
         else if (nextRow < actualRow) betweenActualAndNext = 'up';
       }
-      console.log({ betweenBeforeAndActual, betweenActualAndNext });
+
       const isFromVerticalDirection = ['right', 'left'].includes(
         betweenBeforeAndActual,
       );
@@ -265,7 +303,7 @@ export class StateService {
     this._gameTime.set(0);
     this._timeSubscription?.unsubscribe();
     this._timeSubscription = interval(1000).subscribe(() => {
-      this._gameTime.update((time) => time++);
+      this._gameTime.update((time) => time + 1);
     });
     this._gameTime.update((time) => time++);
     this._speedSubscription = speed$.subscribe((newSpeed) => {
@@ -284,6 +322,7 @@ export class StateService {
     this._timeSubscription?.unsubscribe();
     this._timeSubscription = undefined;
     this.ateFood.set(0);
+    this._gameTime.set(0);
     if (this.maxPoints() > this.points()) this._saveDataToLocalStorage();
     this.gameStatus.set(state);
   }
@@ -323,7 +362,6 @@ export class StateService {
       position: lastBodyPart.position,
       sprite: this.sprites.tail[tailDirection],
     };
-    // TODO Si la serpiente ha ocupado todos los caminos controlar que se ha ganado y no se puede generar comida
     const food = this.food();
     if (
       food &&
