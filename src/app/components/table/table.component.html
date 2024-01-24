@@ -4,7 +4,7 @@
       <div class="parent-cell">
         <div class="cell">
           @if (cell === "food") {
-            🐁
+            <img class="sprite" [src]="'/assets/images/mouse.png'" />
           } @else if (cell === "snake") {
             <img
               class="sprite"
@@ -24,10 +24,11 @@
   </div>
 }
 
-@for (sprite of stateSvc.spritesArray; track $index) {
+<!-- NOTE FOR TESTING -->
+<!-- @for (sprite of stateSvc.spritesArray; track $index) {
   <img class="sprite" [src]="sprite.canvas.toDataURL()" class="cell" />
   {{ sprite.direction }} - {{ sprite.kind }}
-}
+} -->
 <!--
 @for (row of stateSvc.table(); let rowIndex = $index; track rowIndex) {
   <div class="row">

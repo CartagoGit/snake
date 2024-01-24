@@ -13,6 +13,7 @@ import { Injectable, WritableSignal, computed, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
+import { Subscription, interval } from 'rxjs';
 
 @Injectable({
   providedIn: 'root',
@@ -39,12 +40,15 @@ export class StateService {
 
   public speed = computed(() => {
     const ateFood = this.ateFood();
-    const startSpeed = 1000;
+    const startSpeed = 200;
     const speedIncrement = 10;
     const maxSpeed = 1;
     const speed = startSpeed - ateFood * speedIncrement;
     return speed < maxSpeed ? maxSpeed : speed;
   });
+
+  private _gameTimeInt = signal(0);
+  public inervalSubscription: Subscription | undefined = undefined;
 
   public maxPoints = signal(0);
 
@@ -68,17 +72,14 @@ export class StateService {
     this._spritesModel.sprites$.subscribe((sprites) => {
       if (!sprites) return;
       this.sprites = sprites;
-      // NOTE FOR TESTING
-      for (let kindSprites of Object.values(sprites)) {
-        for (let spriteDirection of Object.values(kindSprites)) {
-          const sprite = spriteDirection as ISprite;
-          this.spritesArray.push(sprite);
-        }
-      }
+      // NOTE FOR TESTING in template
+      // for (let kindSprites of Object.values(sprites)) {
+      //   for (let spriteDirection of Object.values(kindSprites)) {
+      //     const sprite = spriteDirection as ISprite;
+      //     this.spritesArray.push(sprite);
+      //   }
+      // }
       this.startGame();
-      setInterval(() => {
-        this.moveSnake();
-      }, 300);
     });
   }
 
@@ -160,11 +161,10 @@ export class StateService {
   }
 
   private _getBodySnake(data: {
-    beforeHead: ISnakeBody;
     newHead: ISnakeBody;
     snake: ISnakeBody[];
   }): ISnakeBody {
-    const { newHead, snake, beforeHead } = data;
+    const { newHead, snake } = data;
 
     const before = snake[1];
     const actual = snake[0];
@@ -190,47 +190,52 @@ export class StateService {
         sprite: this.sprites[kindBody][kindSprite],
       };
     } else if (kindBody === 'curve') {
-      let betweenBeforeAndActual: IDirection;
+      let betweenBeforeAndActual!: IDirection;
       if (beforeRow === actualRow) {
-        betweenBeforeAndActual = beforeCol < actualCol ? 'right' : 'left';
+        if (beforeCol < actualCol) betweenBeforeAndActual = 'right';
+        else if (actualCol < beforeCol) betweenBeforeAndActual = 'left';
       } else if (beforeCol === actualCol) {
-        betweenBeforeAndActual = beforeRow < actualRow ? 'down' : 'up';
+        if (beforeRow < actualRow) betweenBeforeAndActual = 'down';
+        else if (actualRow < beforeRow) betweenBeforeAndActual = 'up';
       }
-      let betweenActualAndNext: IDirection;
+
+      let betweenActualAndNext!: IDirection;
       if (actualRow === nextRow) {
-        betweenActualAndNext = actualCol < nextCol ? 'right' : 'left';
+        if (actualCol < nextCol) betweenActualAndNext = 'right';
+        else if (nextCol < actualCol) betweenActualAndNext = 'left';
       } else if (actualCol === nextCol) {
-        betweenActualAndNext = actualRow < nextRow ? 'down' : 'up';
+        if (actualRow < nextRow) betweenActualAndNext = 'down';
+        else if (nextRow < actualRow) betweenActualAndNext = 'up';
+      }
+      console.log({ betweenBeforeAndActual, betweenActualAndNext });
+      const isFromVerticalDirection = ['right', 'left'].includes(
+        betweenBeforeAndActual,
+      );
+      if (isFromVerticalDirection) {
+        betweenBeforeAndActual = this._opposite[betweenBeforeAndActual];
+        betweenActualAndNext = this._opposite[betweenActualAndNext];
       }
       const vertical = (['up', 'down'] as IDirection[]).includes(
-        betweenBeforeAndActual!,
+        betweenBeforeAndActual,
       )
-        ? betweenBeforeAndActual!
-        : betweenActualAndNext!;
+        ? betweenBeforeAndActual
+        : betweenActualAndNext;
 
       const horizontal = (['left', 'right'] as IDirection[]).includes(
-        betweenBeforeAndActual!,
+        betweenBeforeAndActual,
       )
-        ? betweenBeforeAndActual!
-        : betweenActualAndNext!;
+        ? betweenBeforeAndActual
+        : betweenActualAndNext;
       let kindSprite = (vertical +
         horizontal[0].toUpperCase() +
         horizontal.slice(1)) as 'upLeft' | 'upRight' | 'downLeft' | 'downRight';
-      console.log({
-        vertical,
-        horizontal,
-        kindSprite,
-        kindBody,
-      });
-      console.log({
-        sprite: JSON.parse(JSON.stringify(this.sprites[kindBody][kindSprite])),
-      });
       snake[0] = {
         ...snake[0],
         kind: 'body',
         sprite: this.sprites[kindBody][kindSprite],
       };
     }
+    snake[0].to = this._opposite[newHead.from];
     return snake[0];
   }
 
@@ -246,9 +251,15 @@ export class StateService {
     this.food.set(food);
     newTable[food.row][food.col] = 'food';
     this.table.set(newTable);
+    this.inervalSubscription = interval(this.speed()).subscribe(() => {
+      this._gameTimeInt.update((time) => time++);
+      this.moveSnake();
+    });
   }
 
   public stopGame(state: IGameStatus): void {
+    this.inervalSubscription?.unsubscribe();
+    this.inervalSubscription = undefined;
     this.gameStatus.set(state);
   }
 
@@ -271,7 +282,8 @@ export class StateService {
       newHeadPosition.row < 0 ||
       newHeadPosition.row >= this.size.rows ||
       newHeadPosition.col < 0 ||
-      newHeadPosition.col >= this.size.cols
+      newHeadPosition.col >= this.size.cols ||
+      this.table()[newHeadPosition.row][newHeadPosition.col] === 'snake'
     ) {
       this.stopGame('lost');
       return;
@@ -296,14 +308,11 @@ export class StateService {
       this.ateFood.update((ateFood) => ateFood + 1);
       this.snake.update((snake) => {
         const newBodySnake = this._getBodySnake({
-          beforeHead: head,
           newHead,
           snake,
         });
         snake[0] = newBodySnake;
-        // snake[snake.length - 1] = newTail;
         snake.unshift(newHead);
-        console.log(snake);
         return [...snake];
       });
       this.table.update((table) => {
@@ -320,7 +329,6 @@ export class StateService {
     this.snake.update((snake) => {
       if (snake.length > 2) {
         snake[0] = this._getBodySnake({
-          beforeHead: head,
           newHead,
           snake,
         });
