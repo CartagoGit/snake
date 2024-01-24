@@ -32,16 +32,11 @@ app-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  box-sizing: border-box;
 }
-
-main {
+.main-container {
   grid-area: main;
   position: relative;
-  flex-direction: column;
-  gap: 10px;
-  padding: 10px;
-  border: var(--border);
-  border-color: var(--border-color-exterior);
   .game-over {
     position: absolute;
     top: 0;
@@ -53,13 +48,43 @@ main {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 24px;
-    color: var(--gray-400);
+    font-size: 40px;
+    color: var(--gray-200);
     z-index: 1;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 30px;
+    z-index: 3;
+    transition: ease 0.2s all;
+    .button {
+      width: 200px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 10px;
+      font-size: 20px;
+      color: var(--green-100);
+      background-color: var(--green-800);
+      &:hover {
+        background-color: var(--green-900);
+      }
+      &:active {
+        background-color: var(--green-800);
+      }
+      &:disabled {
+        background-color: var(--green-700);
+        cursor: not-allowed;
+      }
+    }
   }
+}
+main {
+  position: relative;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px;
+  border: var(--border);
+  border-color: var(--border-color-exterior);
 }
 
 app-footer {

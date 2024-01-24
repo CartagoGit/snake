@@ -140,3 +140,16 @@ input {
   cursor: not-allowed !important;
   opacity: 0.5 !important;
 }
+
+.image {
+  max-height: 40px;
+  max-width: 40px;
+  border: solid 2px var(--gray-950);
+  border-radius: 10px;
+  overflow: hidden;
+  background-color: var(--emerald-800);
+  transition: ease 0.3s all;
+  &:hover{
+    transform: scale(1.2);
+  }
+}

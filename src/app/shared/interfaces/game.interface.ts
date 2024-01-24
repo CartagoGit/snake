@@ -1,4 +1,4 @@
-export type IGameStatus = 'playing' | 'won' | 'lost' | 'stoped';
+export type IGameStatus = 'playing' | 'lost';
 
 export interface ISizeTable {
   rows: number;
@@ -59,7 +59,7 @@ export type ISpriteDirection =
   | 'downRight'
   | 'vertical'
   | 'horizontal';
-  
+
 export interface ISprite {
   canvas: HTMLCanvasElement;
   context: CanvasRenderingContext2D;

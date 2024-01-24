@@ -1,9 +1,19 @@
 <div class="game-container">
   <app-header />
 
-  <main>
-    <app-table />
-  </main>
+  <div class="main-container">
+    <div
+      class="game-over"
+      [ngClass]="{ 'opacity-0': stateSvc.gameStatus() === 'playing' }"
+    >
+    <span class="game-over__text">Game Over</span>
+    <button class="button" (click)="stateSvc.startGame()">New Game</button>
+  </div>
+
+    <main>
+      <app-table />
+    </main>
+  </div>
 
   <app-footer />
 </div>

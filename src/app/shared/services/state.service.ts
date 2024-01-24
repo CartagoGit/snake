@@ -19,7 +19,6 @@ import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
 import { BehaviorSubject, Subscription, interval } from 'rxjs';
 
-
 @Injectable({
   providedIn: 'root',
 })
@@ -38,7 +37,7 @@ export class StateService {
     // rows: 10,
   };
 
-  public gameStatus: WritableSignal<IGameStatus> = signal('playing');
+  public gameStatus: WritableSignal<IGameStatus> = signal('lost');
   public snake: WritableSignal<ISnakeBody[]> = signal([]);
   public ateFood = signal(0);
   public food: WritableSignal<IPosition | undefined> = signal(undefined);
@@ -48,7 +47,7 @@ export class StateService {
   public speed = computed(() => {
     const ateFood = this.ateFood();
     const startSpeed = 300;
-    if(ateFood === 0) {
+    if (ateFood === 0) {
       this._speed$.next(startSpeed);
       this._actualSpeed = startSpeed;
       return startSpeed;
@@ -56,7 +55,8 @@ export class StateService {
     const speedIncrement = Math.ceil(this._actualSpeed / 20);
     const maxSpeed = 1;
     this._actualSpeed = this._actualSpeed - speedIncrement;
-    this._actualSpeed = this._actualSpeed < maxSpeed ? maxSpeed : this._actualSpeed;
+    this._actualSpeed =
+      this._actualSpeed < maxSpeed ? maxSpeed : this._actualSpeed;
 
     this._speed$.next(this._actualSpeed);
     return this._actualSpeed;
@@ -129,7 +129,8 @@ export class StateService {
       //     this.spritesArray.push(sprite);
       //   }
       // }
-      this.startGame();
+      // this.startGame();
+      this.table.set(this._createNewTable());
     });
   }
 
@@ -387,6 +388,9 @@ export class StateService {
 
   // ANCHOR : Public Methods
   public startGame(): void {
+    this.gameStatus.set('playing');
+    this.ateFood.set(0);
+    this._gameTime.set(0);
     this._createFood();
     const newTable = this._createNewTable();
     this.snake.set(this._createSnake());
@@ -420,8 +424,6 @@ export class StateService {
       this.maxPoints.set(this.points());
     }
     this._unsubscribeSubs();
-    this.ateFood.set(0);
-    this._gameTime.set(0);
     this.gameStatus.set(state);
   }
 }
