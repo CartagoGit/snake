@@ -4,16 +4,15 @@ import {
   IGameStatus,
   IPosition,
   ISnakeBody,
-  ISnakeKindBody,
   ISprite,
-  ISpriteDirection,
   ISprites,
 } from './../interfaces/game.interface';
 import { Injectable, WritableSignal, computed, signal } from '@angular/core';
 import { LocalStorageService } from './local-storage.service';
 import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
-import { Subscription, interval } from 'rxjs';
+import { BehaviorSubject, Subscription, interval } from 'rxjs';
+import { toObservable } from '@angular/core/rxjs-interop';
 
 @Injectable({
   providedIn: 'root',
@@ -27,8 +26,8 @@ export class StateService {
   public spritesArray: ISprite[] = [];
 
   public readonly size: ISizeTable = {
-    cols: 30,
-    rows: 18,
+    cols: 20,
+    rows: 15,
     // cols: 10,
     // rows: 10,
   };
@@ -40,17 +39,20 @@ export class StateService {
 
   public speed = computed(() => {
     const ateFood = this.ateFood();
-    const startSpeed = 200;
+    const startSpeed = 300;
     const speedIncrement = 10;
     const maxSpeed = 1;
     const speed = startSpeed - ateFood * speedIncrement;
     return speed < maxSpeed ? maxSpeed : speed;
   });
 
-  private _gameTimeInt = signal(0);
-  public inervalSubscription: Subscription | undefined = undefined;
+  private _gameTime = signal(0);
+  private _intervalSubscription: Subscription | undefined = undefined;
+  private _speedSubscription: Subscription | undefined = undefined;
+  private _timeSubscription: Subscription | undefined = undefined;
 
   public maxPoints = signal(0);
+  public points = signal(0);
 
   private _opposite: Record<IDirection, IDirection> = {
     up: 'down',
@@ -81,6 +83,12 @@ export class StateService {
       // }
       this.startGame();
     });
+  }
+
+  ngOnDestroy(): void {
+    this._intervalSubscription?.unsubscribe();
+    this._speedSubscription?.unsubscribe();
+    this._timeSubscription?.unsubscribe();
   }
 
   // ANCHOR : Private Methods
@@ -251,15 +259,32 @@ export class StateService {
     this.food.set(food);
     newTable[food.row][food.col] = 'food';
     this.table.set(newTable);
-    this.inervalSubscription = interval(this.speed()).subscribe(() => {
-      this._gameTimeInt.update((time) => time++);
-      this.moveSnake();
+    const speed$ = new BehaviorSubject(this.speed());
+    this._speedSubscription?.unsubscribe();
+    // NOTE Game and interval timers
+    this._gameTime.set(0);
+    this._timeSubscription?.unsubscribe();
+    this._timeSubscription = interval(1000).subscribe(() => {
+      this._gameTime.update((time) => time++);
+    });
+    this._gameTime.update((time) => time++);
+    this._speedSubscription = speed$.subscribe((newSpeed) => {
+      this._intervalSubscription?.unsubscribe();
+      this._intervalSubscription = interval(newSpeed).subscribe(() => {
+        this.moveSnake();
+      });
     });
   }
 
   public stopGame(state: IGameStatus): void {
-    this.inervalSubscription?.unsubscribe();
-    this.inervalSubscription = undefined;
+    this._intervalSubscription?.unsubscribe();
+    this._intervalSubscription = undefined;
+    this._speedSubscription?.unsubscribe();
+    this._speedSubscription = undefined;
+    this._timeSubscription?.unsubscribe();
+    this._timeSubscription = undefined;
+    this.ateFood.set(0);
+    if (this.maxPoints() > this.points()) this._saveDataToLocalStorage();
     this.gameStatus.set(state);
   }
 
