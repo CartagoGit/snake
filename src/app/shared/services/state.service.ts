@@ -277,7 +277,8 @@ export class StateService {
       return;
     }
     const lastBodyPart = snake[snake.length - 2];
-    const tailDirection = this.ateFood() === 0 ? this.direction() : tail.to;
+    const tailDirection =
+      this.ateFood() === 0 ? this.direction() : lastBodyPart.to;
     const newTail: ISnakeBody = {
       kind: 'tail',
       from: lastBodyPart.from,

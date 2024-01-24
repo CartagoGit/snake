@@ -32,10 +32,10 @@ export class Sprites {
       left: { row: 3, col: 3 },
     },
     curve: {
-      downLeft: { row: 2, col: 2 },
-      downRight: { row: 1, col: 0 },
       upLeft: { row: 0, col: 2 },
       upRight: { row: 0, col: 0 },
+      downLeft: { row: 2, col: 2 },
+      downRight: { row: 1, col: 0 },
     },
   };
 
