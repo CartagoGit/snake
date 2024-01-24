@@ -19,7 +19,7 @@ app-footer {
   display: flex;
   justify-content: center;
   align-items: center;
-  padding: 10px 10px;
+  padding: 10px 15px;
 }
 
 app-header {
@@ -67,13 +67,16 @@ app-footer {
   background-color: var(--gray-800);
   border-top: 1px solid var(--gray-700);
   box-shadow: var(--box-shadow);
-  font-size: 14px;
-  justify-content: flex-start;
+  font-size: 16px;
+  font-weight: 500;
   color: var(--gray-400);
   display: flex;
-  justify-content: center;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  flex-direction: row;
   width: 100%;
   gap: 10px;
 }

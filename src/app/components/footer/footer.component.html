@@ -1,5 +1,8 @@
 <span>Time: {{ stateSvc.gameTimeFormated() }}</span>
-<span>Points: {{  stateSvc.points() }}</span>
-<span>Food: {{ stateSvc.ateFood() }}</span>
-<span>Max. Points: {{ stateSvc.maxPoints() }}</span>
 <span>Speed: {{ stateSvc.speed() }}</span>
+<span>Points: {{ stateSvc.points() }}</span>
+<span>Max. Points: {{ stateSvc.maxPoints() }}</span>
+<span class="food">
+  <span> {{ stateSvc.ateFood() }}</span>
+  <img class="food__img" [src]="'/assets/images/mouse.png'" />
+</span>

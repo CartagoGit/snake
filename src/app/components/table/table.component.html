@@ -4,7 +4,11 @@
       <div class="parent-cell">
         <div class="cell">
           @if (cell === "food") {
-            <img class="sprite" [src]="'/assets/images/mouse.png'" />
+            <img
+              class="sprite"
+              [ngClass]="{ food: stateSvc.gameStatus() === 'playing' }"
+              [src]="'/assets/images/mouse.png'"
+            />
           } @else if (cell === "snake") {
             <img
               class="sprite"

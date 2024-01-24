@@ -18,7 +18,7 @@ import { LocalStorageService } from './local-storage.service';
 import { IDirection, ISizeTable } from '../interfaces/game.interface';
 import { Sprites } from '../models/sprites.model';
 import { BehaviorSubject, Subscription, interval } from 'rxjs';
-import { toObservable } from '@angular/core/rxjs-interop';
+
 
 @Injectable({
   providedIn: 'root',
